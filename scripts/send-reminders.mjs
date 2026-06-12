@@ -60,12 +60,25 @@ let acts = 0;
 for (const a of data?.activities || [])
   if (today >= a.start && (a.days || []).includes(dow) && !(a.doneDates || []).includes(today)) acts++;
 
-if (!due && !acts) { console.log("Rien à rappeler aujourd'hui 🎉"); process.exit(0); }
+// examen imminent (aujourd'hui ou dans ≤ 3 jours)
+let examMsg = "";
+const nextExam = (data?.exams || [])
+  .filter(e => e.date >= today)
+  .sort((a, b) => a.date.localeCompare(b.date))[0];
+if (nextExam) {
+  const dEx = Math.round((new Date(nextExam.date) - new Date(today)) / 864e5);
+  if (dEx === 0) examMsg = `🎯 ${nextExam.label} AUJOURD'HUI ! `;
+  else if (dEx <= 3) examMsg = `🎯 ${nextExam.label} dans ${dEx} j. `;
+}
+
+if (!due && !acts && !examMsg) { console.log("Rien à rappeler aujourd'hui 🎉"); process.exit(0); }
 
 const parts = [];
 if (due) parts.push(`${due} révision${due > 1 ? "s" : ""}`);
 if (acts) parts.push(`${acts} activité${acts > 1 ? "s" : ""}`);
-const body = parts.join(" et ") + ` t'attend${due + acts > 1 ? "ent" : ""} aujourd'hui 💪`;
+const body = examMsg + (parts.length
+  ? parts.join(" et ") + ` t'attend${due + acts > 1 ? "ent" : ""} aujourd'hui 💪`
+  : "Bonne chance, tu as bossé pour ça 💪");
 
 webpush.setVapidDetails("mailto:hmztwitch933@gmail.com", VAPID_PUBLIC, priv);
 

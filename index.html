@@ -447,6 +447,22 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 .tt-label{font-weight:700;font-size:14px}
 .tt-note{font-size:12px;color:var(--muted);margin-top:2px}
 
+/* ---------- examens & vacances ---------- */
+.exam-row{
+  display:flex;align-items:center;gap:14px;
+  background:var(--card);border:1px solid var(--border);border-left:4px solid var(--c);
+  border-radius:14px;padding:12px 14px;box-shadow:var(--shadow);
+}
+.exam-count{font-weight:800;font-size:15px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.exam-count.urgent{color:var(--danger)}
+.holiday-banner{
+  display:flex;align-items:center;gap:10px;
+  background:var(--card);border:1.5px dashed var(--border);border-radius:16px;
+  padding:14px 16px;color:var(--muted);font-weight:600;font-size:13.5px;line-height:1.5;
+}
+.cal-cell.hol{background:color-mix(in srgb,var(--warn) 7%,var(--card-2))}
+.cal-mark{font-size:10px;line-height:1}
+
 /* ---------- flashcards & quiz ---------- */
 .cards-list{max-height:300px;overflow-y:auto;margin-bottom:16px;display:flex;flex-direction:column;gap:8px}
 .card-row{display:flex;gap:10px;align-items:flex-start;background:var(--card-2);border:1px solid var(--border);border-radius:13px;padding:11px 13px}
@@ -535,9 +551,9 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
   .cal-cell{min-height:54px;padding:5px}
   .row2{grid-template-columns:1fr}
   .methods{grid-template-columns:1fr}
-  .type-switch{grid-template-columns:1fr}
   .focus-methods{grid-template-columns:1fr 1fr}
   .custom-focus{grid-template-columns:1fr 1fr}
+  .type-switch{grid-template-columns:1fr 1fr}
   .ring-time{font-size:40px}
   .brand .tagline{display:none}
   .date-heading{font-size:22px}
@@ -608,6 +624,8 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
       <button type="button" class="type-btn sel" data-action="pick-type" data-type="course">📚 Cours</button>
       <button type="button" class="type-btn" data-action="pick-type" data-type="activity">🏃 Activité</button>
       <button type="button" class="type-btn" data-action="pick-type" data-type="timetable">🗓️ Emploi du temps</button>
+      <button type="button" class="type-btn" data-action="pick-type" data-type="exam">🎯 Examen</button>
+      <button type="button" class="type-btn" data-action="pick-type" data-type="holiday">🏖️ Vacances</button>
     </div>
 
     <div class="field">
@@ -690,6 +708,27 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
       <div class="field">
         <label>Couleur</label>
         <div class="swatches" id="ttSwatches" style="margin-top:0"></div>
+      </div>
+    </div>
+
+    <div id="examFields" style="display:none">
+      <div class="row2">
+        <div class="field"><label for="fExamDate">Date de l'examen</label><input type="date" id="fExamDate"></div>
+        <div class="field"><label for="fExamTime">Heure (optionnel)</label><input type="time" id="fExamTime"></div>
+      </div>
+      <div class="field">
+        <label>Couleur</label>
+        <div class="swatches" id="examSwatches" style="margin-top:0"></div>
+      </div>
+    </div>
+
+    <div id="holidayFields" style="display:none">
+      <div class="row2">
+        <div class="field"><label for="fHolStart">Premier jour</label><input type="date" id="fHolStart"></div>
+        <div class="field"><label for="fHolEnd">Dernier jour</label><input type="date" id="fHolEnd"></div>
+      </div>
+      <div class="field" style="margin-top:-6px">
+        <div class="hint">Pendant cette période, ton emploi du temps est mis en pause automatiquement. Les révisions, elles, continuent 😉</div>
       </div>
     </div>
 
@@ -856,6 +895,8 @@ let selectedDay = null;      // "YYYY-MM-DD"
 function normalize(s){
   if(!Array.isArray(s.activities)) s.activities = [];
   if(!Array.isArray(s.timetable)) s.timetable = [];
+  if(!Array.isArray(s.exams)) s.exams = [];
+  if(!Array.isArray(s.holidays)) s.holidays = [];
   if(!s.focusLog || typeof s.focusLog!=="object" || Array.isArray(s.focusLog)) s.focusLog = {};
   if(!s.customFocus || typeof s.customFocus!=="object") s.customFocus = {work:30, brk:5, longBrk:15, cycles:4};
   if(!s.focusMethodId) s.focusMethodId = "pomodoro";
@@ -1014,6 +1055,33 @@ function ttOn(dow){
   return state.timetable.filter(t=>t.days.includes(dow)).sort((a,b)=>a.start.localeCompare(b.start));
 }
 
+/* ============ EXAMENS & VACANCES ============ */
+function holidayOn(iso){
+  return state.holidays.find(h=>iso>=h.start && iso<=h.end) || null;
+}
+function upcomingExams(){
+  const t = todayISO();
+  return [...state.exams].filter(e=>e.date>=t).sort((a,b)=>a.date.localeCompare(b.date));
+}
+function examRow(ex){
+  const d = diffDays(todayISO(), ex.date);
+  const sub = [cap(fmtHuman(ex.date))];
+  if(ex.time) sub.push(fmtTime(ex.time));
+  if(ex.notes) sub.push(esc(ex.notes));
+  return `
+  <div class="exam-row" style="--c:${ex.color}">
+    <span class="exam-count ${d<=7?"urgent":""}">${d===0?"AUJOURD'HUI":"J-"+d}</span>
+    <div style="flex:1;min-width:0">
+      <div class="tt-label">🎯 ${esc(ex.label)}</div>
+      <div class="tt-note">${sub.join(" · ")}</div>
+    </div>
+  </div>`;
+}
+function holidayBanner(hol, iso){
+  const end = fmtHuman(hol.end);
+  return `<div class="holiday-banner">🏖️ <span><b>${esc(hol.label)}</b> — pas de cours jusqu'${end.startsWith("a")||end.startsWith("h")?"à ":"au "}${end}. Profite… mais les révisions continuent 😏</span></div>`;
+}
+
 /* ============ RENDU : ROW D'ACTIVITÉ ============ */
 function activityRow(a, iso, opts){
   opts = opts || {};
@@ -1059,7 +1127,13 @@ function renderToday(){
       <div class="stat"><div class="ico" style="background:rgba(255,159,67,.15)">📖</div><div><div class="num">${state.lessons.length + state.activities.length}</div><div class="lbl">Cours & activités suivis</div></div></div>
     </div>`;
 
-  if(state.lessons.length===0 && state.activities.length===0 && state.timetable.length===0){
+  const nextExams = upcomingExams().slice(0,3);
+  if(nextExams.length){
+    html += `<div class="section-title">🎯 Prochains examens <span class="count">${upcomingExams().length}</span></div>
+      <div class="tt-list">${nextExams.map(examRow).join("")}</div>`;
+  }
+
+  if(state.lessons.length===0 && state.activities.length===0 && state.timetable.length===0 && state.exams.length===0 && state.holidays.length===0){
     html += `
     <div class="empty" style="margin-top:22px">
       <span class="emoji">🚀</span>
@@ -1071,8 +1145,11 @@ function renderToday(){
     return;
   }
 
-  const ttToday = ttOn(dowIndex(t));
-  if(ttToday.length){
+  const holToday = holidayOn(t);
+  const ttToday = holToday ? [] : ttOn(dowIndex(t));
+  if(holToday){
+    html += `<div style="margin-top:14px">${holidayBanner(holToday, t)}</div>`;
+  }else if(ttToday.length){
     html += `<div class="section-title">🗓️ Tes cours du jour <span class="count">${ttToday.length}</span></div>
       <div class="tt-list">${ttToday.map(x=>ttRow(x,false)).join("")}</div>`;
   }
@@ -1138,19 +1215,25 @@ function renderCalendar(){
     const dayTasks = byDate[iso]||[];
     const dotDefs = dayTasks.map(x=>({c:subjectOf(x.lesson).color, faded:x.review.done}))
       .concat(activitiesOn(iso).map(a=>({c:a.color, faded:actDoneOn(a,iso)})));
-    const dots = dotDefs.slice(0,4).map(x=>`<span class="dot ${x.faded?"faded":""}" style="--c:${x.c}"></span>`).join("")
+    const dayExams = state.exams.filter(e=>e.date===iso);
+    const dots = (dayExams.length?`<span class="cal-mark">🎯</span>`:"")
+      + dotDefs.slice(0,4).map(x=>`<span class="dot ${x.faded?"faded":""}" style="--c:${x.c}"></span>`).join("")
       + (dotDefs.length>4?`<span class="more">+${dotDefs.length-4}</span>`:"");
-    grid += `<div class="cal-cell ${other?"other":""} ${iso===t?"today":""} ${iso===selectedDay?"selected":""}" data-action="select-day" data-date="${iso}">
+    grid += `<div class="cal-cell ${other?"other":""} ${iso===t?"today":""} ${iso===selectedDay?"selected":""} ${holidayOn(iso)?"hol":""}" data-action="select-day" data-date="${iso}">
       <span class="d">${d.getDate()}</span><div class="dots">${dots}</div>
     </div>`;
   }
 
   const sel = (byDate[selectedDay]||[]).sort((a,b)=>(a.review.done?1:0)-(b.review.done?1:0));
   const selActs = activitiesOn(selectedDay);
-  const selTT = ttOn(dowIndex(selectedDay));
+  const selHol = holidayOn(selectedDay);
+  const selTT = selHol ? [] : ttOn(dowIndex(selectedDay));
+  const selExams = state.exams.filter(e=>e.date===selectedDay);
   let panel = `<div class="section-title">📍 ${fmtLong(selectedDay)}</div>`;
-  panel += (sel.length || selActs.length || selTT.length)
-    ? `${selTT.length?`<div class="tt-list" style="margin-bottom:10px">${selTT.map(x=>ttRow(x,false)).join("")}</div>`:""}
+  panel += (sel.length || selActs.length || selTT.length || selExams.length || selHol)
+    ? `${selHol?`<div style="margin-bottom:10px">${holidayBanner(selHol, selectedDay)}</div>`:""}
+       ${selExams.length?`<div class="tt-list" style="margin-bottom:10px">${selExams.map(examRow).join("")}</div>`:""}
+       ${selTT.length?`<div class="tt-list" style="margin-bottom:10px">${selTT.map(x=>ttRow(x,false)).join("")}</div>`:""}
        <div class="task-list">${sel.map(x=>taskRow(x.lesson,x.review)).join("")}${selActs.map(a=>activityRow(a,selectedDay)).join("")}</div>`
     : `<div class="empty"><span class="emoji">🌤️</span><h3>Rien de prévu ce jour-là</h3><p>Une journée libre, ça se savoure.</p></div>`;
 
@@ -1171,7 +1254,7 @@ function renderCalendar(){
 
 /* ============ VUE : MES COURS ============ */
 function renderCourses(){
-  if(state.lessons.length===0 && state.activities.length===0 && state.timetable.length===0){
+  if(state.lessons.length===0 && state.activities.length===0 && state.timetable.length===0 && state.exams.length===0 && state.holidays.length===0){
     $("#view-courses").innerHTML = `
       <div class="empty"><span class="emoji">📭</span>
       <h3>Aucun cours ni activité pour l'instant</h3>
@@ -1250,10 +1333,55 @@ function renderCourses(){
       <div class="tt-list">${ttOn(d).map(x=>ttRow(x,true)).join("")}</div>
     </div>`).join("");
 
+  const exCards = [...state.exams].sort((a,b)=>a.date.localeCompare(b.date)).map(ex=>{
+    const d = diffDays(todayISO(), ex.date);
+    const past = d < 0;
+    return `
+    <div class="course-card" data-eid="${ex.id}" ${past?'style="opacity:.55"':""}>
+      <div class="course-top">
+        <h3>🎯 ${esc(ex.label)}</h3>
+        <button class="icon-btn danger" data-action="delete-exam" title="Supprimer cet examen">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+        </button>
+      </div>
+      <div class="course-meta">
+        <span class="chip" style="--c:${ex.color}">${past?"Passé ✅":d===0?"AUJOURD'HUI 💪":"J-"+d}</span>
+        <span>${fmtLong(ex.date)}${ex.time?" · "+fmtTime(ex.time):""}</span>
+      </div>
+      ${ex.notes?`<div class="task-note">${esc(ex.notes)}</div>`:""}
+      ${!past?`<button class="btn-secondary" data-action="prepare-exam" style="align-self:flex-start">📚 Planifier les révisions</button>`:""}
+    </div>`;
+  }).join("");
+
+  const holCards = [...state.holidays].sort((a,b)=>a.start.localeCompare(b.start)).map(h=>`
+    <div class="course-card" data-hid="${h.id}">
+      <div class="course-top">
+        <h3>🏖️ ${esc(h.label)}</h3>
+        <button class="icon-btn danger" data-action="delete-holiday" title="Supprimer cette période">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+        </button>
+      </div>
+      <div class="course-meta">
+        <span>du ${fmtShort(h.start)} au ${fmtShort(h.end)}</span>
+        <span>· ${diffDays(h.start,h.end)+1} jours</span>
+      </div>
+      ${h.notes?`<div class="task-note">${esc(h.notes)}</div>`:""}
+      <div class="course-next">L'emploi du temps est en pause sur cette période 🏖️</div>
+    </div>`).join("");
+
   let html = "";
-  if(cards) html += `<div class="section-title" style="margin-top:0">📚 Mes cours <span class="count">${state.lessons.length}</span></div><div class="courses-grid">${cards}</div>`;
-  if(actCards) html += `<div class="section-title" ${cards?"":'style="margin-top:0"'}>🏃 Mes activités <span class="count">${state.activities.length}</span></div><div class="courses-grid">${actCards}</div>`;
-  if(ttCards) html += `<div class="section-title" ${(cards||actCards)?"":'style="margin-top:0"'}>🗓️ Mon emploi du temps <span class="count">${state.timetable.length}</span></div><div class="courses-grid">${ttCards}</div>`;
+  let first = true;
+  const section = (content, title, count)=>{
+    if(!content) return "";
+    const s = `<div class="section-title" ${first?'style="margin-top:0"':""}>${title} <span class="count">${count}</span></div><div class="courses-grid">${content}</div>`;
+    first = false;
+    return s;
+  };
+  html += section(exCards, "🎯 Mes examens", state.exams.length);
+  html += section(cards, "📚 Mes cours", state.lessons.length);
+  html += section(actCards, "🏃 Mes activités", state.activities.length);
+  html += section(ttCards, "🗓️ Mon emploi du temps", state.timetable.length);
+  html += section(holCards, "🏖️ Mes vacances", state.holidays.length);
   $("#view-courses").innerHTML = html;
   $("#view-courses").querySelectorAll(".course-card").forEach((el,i)=>el.style.animationDelay = Math.min(i*50,300)+"ms");
 }
@@ -1522,6 +1650,7 @@ let pickedActColor = PALETTE[3];
 let pickedDays = [];
 let pickedTTDays = [];
 let pickedTTColor = PALETTE[0];
+let pickedExamColor = PALETTE[1];
 
 function buildMethodCards(){
   $("#methodList").innerHTML = METHODS.map(m=>`
@@ -1554,12 +1683,18 @@ function buildTTSwatches(){
   $("#ttSwatches").innerHTML = PALETTE.map(c=>
     `<button type="button" class="swatch ${c===pickedTTColor?"sel":""}" style="--c:${c}" data-action="pick-tt-color" data-color="${c}" aria-label="Couleur"></button>`).join("");
 }
+function buildExamSwatches(){
+  $("#examSwatches").innerHTML = PALETTE.map(c=>
+    `<button type="button" class="swatch ${c===pickedExamColor?"sel":""}" style="--c:${c}" data-action="pick-exam-color" data-color="${c}" aria-label="Couleur"></button>`).join("");
+}
 function applyType(){
   $("#formError").classList.remove("show");
   document.querySelectorAll(".type-btn").forEach(b=>b.classList.toggle("sel", b.dataset.type===pickedType));
   $("#courseFields").style.display = pickedType==="course" ? "block":"none";
   $("#activityFields").style.display = pickedType==="activity" ? "block":"none";
   $("#timetableFields").style.display = pickedType==="timetable" ? "block":"none";
+  $("#examFields").style.display = pickedType==="exam" ? "block":"none";
+  $("#holidayFields").style.display = pickedType==="holiday" ? "block":"none";
   const cfg = {
     course:    {title:"Nouveau cours ✨",    sub:"Dis-moi ce que tu as appris : je planifie toutes tes révisions tout seul.",
                 lbl:"Titre du cours",        ph:"Ex : Chapitre 4 — Les intégrales",
@@ -1572,7 +1707,15 @@ function applyType(){
     timetable: {title:"Nouveau créneau 🗓️",  sub:"Ton emploi du temps de la semaine — visible chaque jour dans ton planning, semaine après semaine.",
                 lbl:"Intitulé du créneau",   ph:"Ex : Maths — amphi 3",
                 nph:"Ex : Salle B204, prof : M. Martin…",
-                pt:"📅 Chaque semaine", btn:"Ajouter à mon emploi du temps"}
+                pt:"📅 Chaque semaine", btn:"Ajouter à mon emploi du temps"},
+    exam:      {title:"Nouvel examen 🎯",    sub:"Compte à rebours sur l'accueil, marquage dans le calendrier, et planification des révisions en un clic.",
+                lbl:"Intitulé de l'examen",  ph:"Ex : Partiel d'anatomie",
+                nph:"Ex : Amphi B, calculatrice autorisée…",
+                pt:"📅 Compte à rebours", btn:"Ajouter l'examen"},
+    holiday:   {title:"Vacances 🏖️",         sub:"Indique tes semaines sans cours : l'emploi du temps se met en pause tout seul sur cette période.",
+                lbl:"Nom de la période",     ph:"Ex : Vacances de Noël",
+                nph:"Ex : Retour chez les parents, penser à ramener les fiches…",
+                pt:"📅 Période", btn:"Ajouter les vacances"}
   }[pickedType];
   $("#modalTitle").textContent = cfg.title;
   $("#modalSub").textContent = cfg.sub;
@@ -1604,6 +1747,30 @@ function currentIntervals(){
 }
 function updatePreview(){
   const box = $("#previewChips");
+  if(pickedType==="exam"){
+    const d = $("#fExamDate").value;
+    if(!d){
+      box.innerHTML = `<span style="font-size:13px;color:var(--muted);font-weight:600">Choisis la date de l'examen 🎯</span>`;
+      return;
+    }
+    const n = diffDays(todayISO(), d);
+    const tm = $("#fExamTime").value;
+    box.innerHTML = `<span class="p-chip">${n<0?"déjà passé":n===0?"AUJOURD'HUI 💪":"J-"+n}</span>
+      <span class="p-chip" style="animation-delay:50ms">${cap(fmtLong(d))}</span>
+      ${tm?`<span class="p-chip" style="animation-delay:100ms">${fmtTime(tm)}</span>`:""}`;
+    return;
+  }
+  if(pickedType==="holiday"){
+    const s = $("#fHolStart").value, e = $("#fHolEnd").value;
+    if(!s || !e || e < s){
+      box.innerHTML = `<span style="font-size:13px;color:var(--muted);font-weight:600">Choisis le premier et le dernier jour 🏖️</span>`;
+      return;
+    }
+    box.innerHTML = `<span class="p-chip">du ${fmtShort(s)}</span>
+      <span class="p-chip" style="animation-delay:50ms">au ${fmtShort(e)}</span>
+      <span class="p-chip" style="animation-delay:100ms">${diffDays(s,e)+1} jours sans cours 🎈</span>`;
+    return;
+  }
   if(pickedType==="timetable"){
     if(!pickedTTDays.length){
       box.innerHTML = `<span style="font-size:13px;color:var(--muted);font-weight:600">Choisis au moins un jour de la semaine 📆</span>`;
@@ -1657,8 +1824,13 @@ function openModal(){
   pickedColor = PALETTE[(state.subjects.length)%PALETTE.length];
   pickedActColor = PALETTE[(state.activities.length+3)%PALETTE.length];
   pickedTTColor = PALETTE[(state.timetable.length)%PALETTE.length];
+  pickedExamColor = PALETTE[(state.exams.length+1)%PALETTE.length];
   $("#fTTStart").value = "08:00";
   $("#fTTEnd").value = "09:00";
+  $("#fExamDate").value = "";
+  $("#fExamTime").value = "";
+  $("#fHolStart").value = todayISO();
+  $("#fHolEnd").value = addDays(todayISO(),13);
   buildSubjectSelect();
   buildMethodCards();
   buildSwatches();
@@ -1667,6 +1839,7 @@ function openModal(){
   buildDayChips();
   buildTTDayChips();
   buildTTSwatches();
+  buildExamSwatches();
   $("#customRow").style.display = "none";
   $("#examRow").style.display = "none";
   applyType();
@@ -1684,6 +1857,30 @@ function submitEntry(){
   const title = $("#fTitle").value.trim();
   if(!title) return showError(pickedType==="course" ? "Donne un titre à ton cours 🙏" : "Donne un nom à ton activité 🙏");
   const notes = $("#fNotes").value.trim();
+
+  if(pickedType==="exam"){
+    const d = $("#fExamDate").value;
+    if(!d) return showError("Choisis la date de l'examen 🎯");
+    state.exams.push({
+      id:uid(), label:title, date:d,
+      time:$("#fExamTime").value || null,
+      color:pickedExamColor, notes, createdAt:Date.now()
+    });
+    save(); closeModal(); render();
+    const n = diffDays(todayISO(), d);
+    toast(`🎯 « ${title.length>30?title.slice(0,30)+"…":title} » ajouté${n>=0?" — J-"+n+" !":""}`);
+    return;
+  }
+
+  if(pickedType==="holiday"){
+    const s = $("#fHolStart").value, e = $("#fHolEnd").value;
+    if(!s || !e) return showError("Choisis le premier et le dernier jour 🏖️");
+    if(e < s) return showError("Le dernier jour doit être après le premier ⏰");
+    state.holidays.push({id:uid(), label:title, start:s, end:e, notes, createdAt:Date.now()});
+    save(); closeModal(); render();
+    toast(`🏖️ « ${title.length>30?title.slice(0,30)+"…":title} » — emploi du temps en pause sur la période`);
+    return;
+  }
 
   if(pickedType==="timetable"){
     if(!pickedTTDays.length) return showError("Choisis au moins un jour de la semaine 📆");
@@ -2481,6 +2678,44 @@ document.addEventListener("click", e=>{
       });
       break;
     }
+    case "pick-exam-color":
+      pickedExamColor = actEl.dataset.color;
+      document.querySelectorAll("#examSwatches .swatch").forEach(b=>b.classList.toggle("sel", b.dataset.color===pickedExamColor));
+      break;
+    case "delete-exam": {
+      const card = actEl.closest(".course-card");
+      armConfirm(actEl, ()=>{
+        state.exams = state.exams.filter(x=>x.id!==card.dataset.eid);
+        save(); render();
+        toast("🗑️ Examen supprimé");
+      });
+      break;
+    }
+    case "delete-holiday": {
+      const card = actEl.closest(".course-card");
+      armConfirm(actEl, ()=>{
+        state.holidays = state.holidays.filter(x=>x.id!==card.dataset.hid);
+        save(); render();
+        toast("🗑️ Période de vacances supprimée");
+      });
+      break;
+    }
+    case "prepare-exam": {
+      const card = actEl.closest(".course-card");
+      const ex = state.exams.find(x=>x.id===card.dataset.eid);
+      if(ex){
+        openModal();
+        $("#fTitle").value = "Révisions — " + ex.label;
+        pickedMethod = "exam";
+        buildMethodCards();
+        $("#customRow").style.display = "none";
+        $("#examRow").style.display = "block";
+        $("#fExam").value = ex.date;
+        updatePreview();
+        toast("🎯 Méthode « Objectif examen » préremplie — choisis la matière et valide !");
+      }
+      break;
+    }
     case "focus-start": focusStartPause(); break;
     case "focus-reset": focusReset(); break;
     case "focus-skip": focusSkip(); break;
@@ -2537,6 +2772,10 @@ $("#fActStart").addEventListener("change", updatePreview);
 $("#fIntervals").addEventListener("input", updatePreview);
 $("#fTTStart").addEventListener("change", updatePreview);
 $("#fTTEnd").addEventListener("change", updatePreview);
+$("#fExamDate").addEventListener("change", updatePreview);
+$("#fExamTime").addEventListener("change", updatePreview);
+$("#fHolStart").addEventListener("change", updatePreview);
+$("#fHolEnd").addEventListener("change", updatePreview);
 $("#apkgFile").addEventListener("change", e=>{
   if(e.target.files[0]) importApkg(e.target.files[0]);
   e.target.value = "";
