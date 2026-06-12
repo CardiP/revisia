@@ -434,6 +434,20 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 .methods-intro{color:var(--muted);font-size:14px;line-height:1.7;margin:-2px 0 16px;max-width:740px}
 .methods-text{color:var(--muted);font-size:13.5px;line-height:1.65}
 
+/* ---------- synchronisation ---------- */
+.sync-steps{padding-left:20px;color:var(--muted);font-size:13.5px;line-height:1.7;margin:0 0 16px}
+.sync-steps li{margin-bottom:8px}
+.sync-steps a{color:var(--text);font-weight:700}
+.sync-row{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  background:var(--card-2);border:1px solid var(--border);border-radius:14px;
+  padding:13px 15px;margin-bottom:10px;font-size:13.5px;font-weight:600;
+}
+.sync-row .lbl{color:var(--muted)}
+@keyframes syncPulse{from{opacity:.35}to{opacity:1}}
+#syncBtn.busy svg{animation:syncPulse .7s ease-in-out infinite alternate}
+#syncBtn.error svg{stroke:var(--danger)}
+
 /* ---------- settings popover ---------- */
 .settings-wrap{position:relative}
 .popover{
@@ -501,11 +515,15 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
     </div>
     <div class="top-actions">
       <button class="btn-ghost" id="themeBtn" title="Changer de thème" aria-label="Changer de thème"></button>
+      <button class="btn-ghost" id="syncBtn" title="Synchroniser maintenant" aria-label="Synchroniser" style="display:none">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
+      </button>
       <div class="settings-wrap">
         <button class="btn-ghost" id="settingsBtn" title="Réglages" aria-label="Réglages">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.09a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         </button>
         <div class="popover" id="settingsPop">
+          <button data-action="open-sync">☁️ Synchronisation</button>
           <button data-action="export">📤 Exporter mes données</button>
           <button data-action="import">📥 Importer des données</button>
           <button class="danger" id="wipeBtn">🗑️ Tout effacer</button>
@@ -631,6 +649,43 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
   </div>
 </div>
 
+<div class="modal-backdrop" id="syncBackdrop">
+  <div class="modal" role="dialog" aria-modal="true">
+    <h2>Synchronisation ☁️</h2>
+    <p class="modal-sub">iPhone, iPad et Mac partagent le même planning, stocké dans un Gist <b>privé</b> de ton compte GitHub. Tes données restent chez toi.</p>
+
+    <div id="syncSetup">
+      <ol class="sync-steps">
+        <li>Ouvre <a href="https://github.com/settings/tokens/new?scopes=gist&description=Revisia%20Sync" target="_blank" rel="noopener">github.com/settings/tokens/new</a> — la permission « gist » est déjà cochée</li>
+        <li>Expiration : <b>No expiration</b>, puis clique <b>Generate token</b></li>
+        <li>Copie le token affiché et colle-le ici :</li>
+      </ol>
+      <div class="field">
+        <input type="password" id="fToken" placeholder="ghp_…" autocomplete="off" autocapitalize="off" spellcheck="false">
+        <div class="hint">Le token reste stocké sur cet appareil, jamais publié. Colle le même token une fois sur chaque appareil : ils se retrouveront automatiquement.</div>
+      </div>
+      <div class="form-error" id="syncError"></div>
+      <div class="modal-actions">
+        <button class="btn-secondary" data-action="close-sync">Plus tard</button>
+        <button class="btn-primary" id="enableSyncBtn">Activer</button>
+      </div>
+    </div>
+
+    <div id="syncStatusBox" style="display:none">
+      <div class="sync-row"><span class="lbl">État</span><span id="syncStateTxt">—</span></div>
+      <div class="sync-row"><span class="lbl">Dernière synchro</span><span id="syncLastTxt">—</span></div>
+      <p class="hint" style="margin-bottom:16px">La synchro est automatique : à l'ouverture de l'appli et après chaque modification. Le bouton ☁️ en haut force une synchro immédiate.</p>
+      <div class="modal-actions" style="justify-content:space-between">
+        <button class="btn-secondary" id="disableSyncBtn">Désactiver ici</button>
+        <div style="display:flex;gap:10px">
+          <button class="btn-secondary" data-action="close-sync">Fermer</button>
+          <button class="btn-primary" data-action="sync-now">Synchroniser</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 <input type="file" id="importFile" accept=".json,application/json" hidden>
 
@@ -701,7 +756,11 @@ function load(){
   }catch(e){}
   return normalize({subjects:[], lessons:[], theme:null});
 }
-function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+function save(){
+  state.lastModified = Date.now();
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  scheduleSync();
+}
 function uid(){ return Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4); }
 
 /* ============ DATES ============ */
@@ -1572,6 +1631,145 @@ function importData(file){
   reader.readAsText(file);
 }
 
+/* ============ SYNCHRO — GIST GITHUB PRIVÉ ============ */
+const SYNC_KEY = "revisia-sync";
+const GIST_FILE = "revisia-data.json";
+let sync = loadSyncCfg();
+let syncing = false;
+let pushTimer = null;
+
+function loadSyncCfg(){
+  try{
+    const raw = localStorage.getItem(SYNC_KEY);
+    if(raw){ const s = JSON.parse(raw); if(s && s.token && s.gistId) return s; }
+  }catch(e){}
+  return null;
+}
+function saveSyncCfg(){
+  if(sync) localStorage.setItem(SYNC_KEY, JSON.stringify(sync));
+  else localStorage.removeItem(SYNC_KEY);
+}
+async function gh(path, opts){
+  opts = opts || {};
+  const res = await fetch("https://api.github.com"+path, {
+    method: opts.method || "GET",
+    headers: {
+      "Authorization": "Bearer " + (opts.token || (sync && sync.token)),
+      "Accept": "application/vnd.github+json"
+    },
+    body: opts.body ? JSON.stringify(opts.body) : undefined
+  });
+  if(!res.ok) throw new Error("GitHub "+res.status);
+  return res.json();
+}
+function setSyncUI(st){
+  const btn = $("#syncBtn");
+  btn.style.display = sync ? "grid" : "none";
+  btn.classList.toggle("busy", st==="busy");
+  btn.classList.toggle("error", st==="error");
+}
+function adoptRemote(remote){
+  state = normalize(remote);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); // sans bump de lastModified
+  applyTheme();
+  render();
+}
+async function readRemote(){
+  const g = await gh("/gists/"+sync.gistId);
+  const f = g.files && g.files[GIST_FILE];
+  if(!f) return null;
+  let content = f.content;
+  if(f.truncated) content = await fetch(f.raw_url).then(r=>r.text());
+  try{ return JSON.parse(content); }catch(e){ return null; }
+}
+async function writeRemote(){
+  const files = {}; files[GIST_FILE] = {content: JSON.stringify(state)};
+  await gh("/gists/"+sync.gistId, {method:"PATCH", body:{files}});
+}
+async function syncNow(silent){
+  if(!sync || syncing) return;
+  syncing = true; setSyncUI("busy");
+  try{
+    const remote = await readRemote();
+    const rT = (remote && remote.lastModified) || 0;
+    const lT = state.lastModified || 0;
+    if(remote && rT > lT){
+      adoptRemote(remote);
+      if(!silent) toast("☁️ Planning récupéré depuis tes autres appareils");
+    }else if(lT > rT){
+      await writeRemote();
+      if(!silent) toast("☁️ Planning sauvegardé en ligne");
+    }else if(!silent){
+      toast("☁️ Tout est déjà à jour");
+    }
+    sync.lastSyncedAt = Date.now(); saveSyncCfg();
+    setSyncUI("ok");
+    refreshSyncModal();
+  }catch(e){
+    setSyncUI("error");
+    if(!silent) toast("⚠️ Synchro impossible — connexion ou token invalide");
+  }
+  syncing = false;
+}
+function scheduleSync(){
+  if(!sync) return;
+  clearTimeout(pushTimer);
+  pushTimer = setTimeout(()=>syncNow(true), 2500);
+}
+async function enableSync(token){
+  const gists = await gh("/gists?per_page=100", {token});
+  const found = gists.find(g=>g.files && g.files[GIST_FILE]);
+  if(found){
+    sync = {token, gistId: found.id, lastSyncedAt: 0};
+    saveSyncCfg();
+    const remote = await readRemote();
+    const localEmpty = state.lessons.length===0 && state.activities.length===0;
+    if(remote && (localEmpty || (remote.lastModified||0) > (state.lastModified||0))){
+      adoptRemote(remote);
+    }else{
+      await writeRemote();
+    }
+  }else{
+    const files = {}; files[GIST_FILE] = {content: JSON.stringify(state)};
+    const g = await gh("/gists", {method:"POST", token, body:{
+      description: "Révisia — synchronisation du planning (privé)",
+      public: false,
+      files
+    }});
+    sync = {token, gistId: g.id, lastSyncedAt: 0};
+    saveSyncCfg();
+  }
+  sync.lastSyncedAt = Date.now(); saveSyncCfg();
+  setSyncUI("ok");
+}
+function fmtSyncTime(ts){
+  if(!ts) return "jamais";
+  const d = new Date(ts);
+  return d.toLocaleDateString("fr-FR",{day:"numeric",month:"short"})+" à "+d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+}
+function refreshSyncModal(){
+  const cfg = !!sync;
+  $("#syncSetup").style.display = cfg ? "none" : "block";
+  $("#syncStatusBox").style.display = cfg ? "block" : "none";
+  if(cfg){
+    $("#syncStateTxt").textContent = "✅ Activée";
+    $("#syncLastTxt").textContent = fmtSyncTime(sync.lastSyncedAt);
+  }
+}
+function showSyncError(msg){
+  const el = $("#syncError");
+  el.textContent = msg;
+  el.classList.remove("show"); void el.offsetWidth;
+  el.classList.add("show");
+}
+function openSyncModal(){
+  $("#syncError").classList.remove("show");
+  $("#fToken").value = "";
+  refreshSyncModal();
+  $("#syncBackdrop").classList.add("open");
+}
+function closeSyncModal(){ $("#syncBackdrop").classList.remove("open"); }
+
 /* ============ ÉVÉNEMENTS ============ */
 document.addEventListener("click", e=>{
   const actEl = e.target.closest("[data-action]");
@@ -1581,6 +1779,7 @@ document.addEventListener("click", e=>{
 
   if(!actEl) {
     if(e.target===$("#modalBackdrop")) closeModal();
+    if(e.target===$("#syncBackdrop")) closeSyncModal();
     return;
   }
   const action = actEl.dataset.action;
@@ -1649,6 +1848,9 @@ document.addEventListener("click", e=>{
     }
     case "export": exportData(); $("#settingsPop").classList.remove("open"); break;
     case "import": $("#importFile").click(); $("#settingsPop").classList.remove("open"); break;
+    case "open-sync": openSyncModal(); $("#settingsPop").classList.remove("open"); break;
+    case "close-sync": closeSyncModal(); break;
+    case "sync-now": syncNow(false); break;
     case "focus-start": focusStartPause(); break;
     case "focus-reset": focusReset(); break;
     case "focus-skip": focusSkip(); break;
@@ -1708,15 +1910,44 @@ $("#importFile").addEventListener("change", e=>{
   e.target.value = "";
 });
 document.addEventListener("keydown", e=>{
-  if(e.key==="Escape"){ closeModal(); $("#settingsPop").classList.remove("open"); }
+  if(e.key==="Escape"){ closeModal(); closeSyncModal(); $("#settingsPop").classList.remove("open"); }
   if(e.key==="Enter" && $("#modalBackdrop").classList.contains("open") && e.target.tagName==="INPUT") submitEntry();
 });
 window.addEventListener("resize", positionPill);
+$("#syncBtn").addEventListener("click", ()=>syncNow(false));
+$("#enableSyncBtn").addEventListener("click", async ()=>{
+  const token = $("#fToken").value.trim();
+  if(token.length < 20) return showSyncError("Colle le token complet généré par GitHub (il commence par ghp_)");
+  const btn = $("#enableSyncBtn");
+  btn.disabled = true; btn.textContent = "Connexion…";
+  try{
+    await enableSync(token);
+    refreshSyncModal();
+    toast("☁️ Synchronisation activée !");
+  }catch(e){
+    showSyncError("GitHub a refusé ce token — vérifie que c'est un token « classic » avec la permission gist");
+  }
+  btn.disabled = false; btn.textContent = "Activer";
+});
+$("#disableSyncBtn").addEventListener("click", e=>{
+  armConfirm(e.currentTarget, ()=>{
+    clearTimeout(pushTimer);
+    sync = null; saveSyncCfg();
+    setSyncUI("ok"); refreshSyncModal();
+    toast("Synchronisation désactivée sur cet appareil (tes données restent ici)");
+  });
+});
+document.addEventListener("visibilitychange", ()=>{
+  if(document.visibilityState==="visible" && sync) syncNow(true);
+});
+window.addEventListener("online", ()=>{ if(sync) syncNow(true); });
 
 /* ============ INIT ============ */
 applyTheme();
 $("#view-today").classList.add("active");
 render();
+setSyncUI("ok");
+if(sync) syncNow(true);
 window.addEventListener("load", positionPill);
 if("serviceWorker" in navigator && location.protocol.indexOf("http")===0){
   navigator.serviceWorker.register("./sw.js").catch(()=>{});
