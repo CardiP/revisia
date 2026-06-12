@@ -1,0 +1,16 @@
+{
+  "name": "Révisia — Mon planning de révisions",
+  "short_name": "Révisia",
+  "description": "Le planning de révisions qui s'organise tout seul : méthode des J, activités perso, minuteur focus.",
+  "lang": "fr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0a0c",
+  "theme_color": "#0a0a0c",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
