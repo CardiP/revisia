@@ -1,0 +1,23 @@
+name: Rappels du matin
+
+on:
+  schedule:
+    - cron: "0 6 * * *"   # 8h en été / 7h en hiver (heure de Paris)
+  workflow_dispatch:        # déclenchement manuel pour tester
+
+permissions:
+  contents: read
+
+jobs:
+  envoyer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install --no-save web-push@3
+      - run: node scripts/send-reminders.mjs
+        env:
+          GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}

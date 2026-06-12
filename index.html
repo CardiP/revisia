@@ -369,8 +369,8 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 @keyframes shake{0%,100%{transform:none}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
 
 /* ---------- activités & extras ---------- */
-.type-switch{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:20px}
-.type-btn{padding:13px 10px;border-radius:15px;border:1.5px solid var(--border);background:var(--card-2);font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;color:var(--muted)}
+.type-switch{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:20px}
+.type-btn{padding:13px 6px;border-radius:15px;border:1.5px solid var(--border);background:var(--card-2);font-weight:800;font-size:12.5px;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .2s;color:var(--muted)}
 .type-btn:hover{border-color:var(--accent)}
 .type-btn.sel{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
 .field textarea,.field input[type=time]{
@@ -433,6 +433,50 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 .custom-focus input:focus{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
 .methods-intro{color:var(--muted);font-size:14px;line-height:1.7;margin:-2px 0 16px;max-width:740px}
 .methods-text{color:var(--muted);font-size:13.5px;line-height:1.65}
+
+/* ---------- emploi du temps ---------- */
+.tt-list{display:flex;flex-direction:column;gap:8px}
+.tt-row{
+  display:flex;align-items:center;gap:12px;
+  background:var(--card);border:1px solid var(--border);border-left:4px solid var(--c);
+  border-radius:14px;padding:11px 14px;box-shadow:var(--shadow);
+  transition:transform .2s;
+}
+.tt-row:hover{transform:translateY(-1px)}
+.tt-time{font-weight:800;font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tt-label{font-weight:700;font-size:14px}
+.tt-note{font-size:12px;color:var(--muted);margin-top:2px}
+
+/* ---------- flashcards & quiz ---------- */
+.cards-list{max-height:300px;overflow-y:auto;margin-bottom:16px;display:flex;flex-direction:column;gap:8px}
+.card-row{display:flex;gap:10px;align-items:flex-start;background:var(--card-2);border:1px solid var(--border);border-radius:13px;padding:11px 13px}
+.card-row .cq{font-weight:700;font-size:13.5px;white-space:pre-line}
+.card-row .ca{font-size:13px;color:var(--muted);margin-top:3px;white-space:pre-line}
+.card-row .icon-btn{width:30px;height:30px;flex-shrink:0}
+.quiz-counter{font-size:12.5px;color:var(--muted);font-weight:700;text-align:center;margin-bottom:10px}
+.quiz-progress{height:6px;border-radius:4px;background:var(--card-2);overflow:hidden;margin-bottom:16px}
+.quiz-progress .bar{height:100%;background:var(--accent);transition:width .35s}
+.quiz-scene{perspective:1200px;margin-bottom:16px}
+.quiz-card{display:grid;transform-style:preserve-3d;transition:transform .45s cubic-bezier(.4,.2,.2,1);min-height:240px;cursor:pointer}
+.quiz-card.flipped{transform:rotateY(180deg)}
+.quiz-face{
+  grid-area:1/1;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+  text-align:center;padding:26px;background:var(--card-2);
+  border:1.5px solid var(--border);border-radius:20px;overflow:hidden;
+}
+.quiz-face.back{transform:rotateY(180deg)}
+.quiz-face .ql{font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+.quiz-face .qt{font-size:17px;font-weight:700;line-height:1.5;white-space:pre-line;max-height:200px;overflow-y:auto}
+.quiz-grades{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.grade-btn{padding:14px 8px;border-radius:14px;font-weight:800;font-size:13.5px;border:1.5px solid var(--border);background:var(--card-2);transition:all .2s}
+.grade-btn:hover{transform:translateY(-2px)}
+.grade-btn.fail:hover{background:var(--danger-soft);border-color:var(--danger)}
+.grade-btn.hard:hover{background:rgba(245,165,36,.12);border-color:var(--warn)}
+.grade-btn.easy:hover{background:var(--success-soft);border-color:var(--success)}
+.quiz-flip-hint{text-align:center;color:var(--muted);font-size:12.5px;font-weight:600;margin-top:4px}
+.quiz-end{text-align:center;padding:14px 0}
+.quiz-score{font-size:46px;font-weight:800;margin:8px 0}
 
 /* ---------- synchronisation ---------- */
 .sync-steps{padding-left:20px;color:var(--muted);font-size:13.5px;line-height:1.7;margin:0 0 16px}
@@ -524,6 +568,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
         </button>
         <div class="popover" id="settingsPop">
           <button data-action="open-sync">☁️ Synchronisation</button>
+          <button data-action="open-notif">🔔 Notifications</button>
           <button data-action="export">📤 Exporter mes données</button>
           <button data-action="import">📥 Importer des données</button>
           <button class="danger" id="wipeBtn">🗑️ Tout effacer</button>
@@ -560,8 +605,9 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
     <div class="form-error" id="formError"></div>
 
     <div class="type-switch">
-      <button type="button" class="type-btn sel" data-action="pick-type" data-type="course">📚 Cours à réviser</button>
-      <button type="button" class="type-btn" data-action="pick-type" data-type="activity">🏃 Activité perso</button>
+      <button type="button" class="type-btn sel" data-action="pick-type" data-type="course">📚 Cours</button>
+      <button type="button" class="type-btn" data-action="pick-type" data-type="activity">🏃 Activité</button>
+      <button type="button" class="type-btn" data-action="pick-type" data-type="timetable">🗓️ Emploi du temps</button>
     </div>
 
     <div class="field">
@@ -631,6 +677,22 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
       </div>
     </div>
 
+    <div id="timetableFields" style="display:none">
+      <div class="field">
+        <label>Quels jours ?</label>
+        <div class="day-chips" id="ttDayChips"></div>
+        <div class="hint">Le créneau revient chaque semaine, comme un vrai emploi du temps.</div>
+      </div>
+      <div class="row2">
+        <div class="field"><label for="fTTStart">Début</label><input type="time" id="fTTStart" value="08:00"></div>
+        <div class="field"><label for="fTTEnd">Fin</label><input type="time" id="fTTEnd" value="09:00"></div>
+      </div>
+      <div class="field">
+        <label>Couleur</label>
+        <div class="swatches" id="ttSwatches" style="margin-top:0"></div>
+      </div>
+    </div>
+
     <div class="field">
       <label for="fNotes">📝 Ce que tu dois faire (optionnel)</label>
       <textarea id="fNotes" maxlength="400" placeholder="Ex : Relire la fiche, refaire les exos 3 et 4, réciter les définitions…"></textarea>
@@ -686,8 +748,58 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
   </div>
 </div>
 
+<div class="modal-backdrop" id="cardsBackdrop">
+  <div class="modal" role="dialog" aria-modal="true">
+    <h2 id="cardsTitle">Flashcards 🎴</h2>
+    <p class="modal-sub">Des questions/réponses pour ce cours. Le jour d'une révision, l'appli te quizze — le rappel actif, c'est ce qui ancre le mieux.</p>
+    <div class="cards-list" id="cardsList"></div>
+    <div class="field">
+      <label for="cardQ">Question</label>
+      <textarea id="cardQ" maxlength="500" placeholder="Ex : Quelle est la dérivée de ln(x) ?" style="min-height:54px"></textarea>
+    </div>
+    <div class="field">
+      <label for="cardA">Réponse</label>
+      <textarea id="cardA" maxlength="1000" placeholder="Ex : 1/x" style="min-height:54px"></textarea>
+    </div>
+    <div class="modal-actions" style="justify-content:flex-start;margin-bottom:18px">
+      <button class="btn-primary" data-action="add-card">＋ Ajouter la carte</button>
+    </div>
+    <div class="field">
+      <label for="cardBulk">Ajout rapide en masse (une carte par ligne : <code>question :: réponse</code>)</label>
+      <textarea id="cardBulk" placeholder="Capitale de l'Italie ? :: Rome&#10;Année de la Révolution ? :: 1789" style="min-height:64px"></textarea>
+    </div>
+    <div class="form-error" id="cardsError"></div>
+    <div class="modal-actions" style="justify-content:space-between">
+      <button class="btn-secondary" data-action="apkg-pick">📦 Importer un paquet Anki (.apkg)</button>
+      <div style="display:flex;gap:10px">
+        <button class="btn-secondary" data-action="bulk-add">Ajouter les lignes</button>
+        <button class="btn-primary" data-action="close-cards">Terminé</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="quizBackdrop">
+  <div class="modal" role="dialog" aria-modal="true" id="quizBody"></div>
+</div>
+
+<div class="modal-backdrop" id="notifBackdrop">
+  <div class="modal" role="dialog" aria-modal="true">
+    <h2>Notifications 🔔</h2>
+    <p class="modal-sub">Chaque matin vers 8 h, un rappel sur cet appareil : « 3 révisions et 1 activité t'attendent aujourd'hui 💪 ».</p>
+    <div id="notifReqs"></div>
+    <div class="form-error" id="notifError"></div>
+    <p class="hint" id="notifHint" style="margin-bottom:16px"></p>
+    <div class="modal-actions">
+      <button class="btn-secondary" data-action="close-notif">Fermer</button>
+      <button class="btn-primary" id="notifToggleBtn">Activer sur cet appareil</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 <input type="file" id="importFile" accept=".json,application/json" hidden>
+<input type="file" id="apkgFile" accept=".apkg,.zip" hidden>
 
 <script>
 "use strict";
@@ -732,6 +844,8 @@ const FOCUS_METHODS = [
 const ACT_EMOJIS = ["🏃","💪","⚽","🏀","🧘","🚴","🏊","🎾","🥊","🎸","🎹","🎨","🎮","📖","🌿"];
 const DAY_LABELS = ["L","M","M","J","V","S","D"];
 const DAY_SHORT  = ["lun","mar","mer","jeu","ven","sam","dim"];
+const DAY_FULL   = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
+const VAPID_PUBLIC = "BMlbv5LV9G2COqrovQM3FvcdB31-Fx6biev1JvRsq8zFC2BzaUJ5mbnMZZvziyIBMh3Zskv6p-c6o0FD4-zSGWM";
 const TITLE_DEFAULT = "Révisia — Mon planning de révisions";
 
 let state = load();
@@ -741,9 +855,11 @@ let selectedDay = null;      // "YYYY-MM-DD"
 
 function normalize(s){
   if(!Array.isArray(s.activities)) s.activities = [];
+  if(!Array.isArray(s.timetable)) s.timetable = [];
   if(!s.focusLog || typeof s.focusLog!=="object" || Array.isArray(s.focusLog)) s.focusLog = {};
   if(!s.customFocus || typeof s.customFocus!=="object") s.customFocus = {work:30, brk:5, longBrk:15, cycles:4};
   if(!s.focusMethodId) s.focusMethodId = "pomodoro";
+  (s.lessons||[]).forEach(l=>{ if(!Array.isArray(l.cards)) l.cards = []; });
   return s;
 }
 function load(){
@@ -873,10 +989,29 @@ function taskRow(lesson, review, opts){
       <div class="task-sub">${parts.join(" ")}</div>
       ${lesson.notes ? `<div class="task-note">${esc(lesson.notes)}</div>`:""}
     </div>
+    ${!review.done && lesson.cards && lesson.cards.length ? `<button class="icon-btn" data-action="start-quiz" title="Lancer le quiz (${lesson.cards.length} cartes)">🎴</button>`:""}
     ${!review.done ? `<button class="icon-btn" data-action="postpone" title="Reporter à demain">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
     </button>`:""}
   </div>`;
+}
+
+/* ============ RENDU : EMPLOI DU TEMPS ============ */
+function ttRow(t, withDelete){
+  return `
+  <div class="tt-row" style="--c:${t.color}" data-tid="${t.id}">
+    <span class="tt-time">${fmtTime(t.start)}${t.end?" – "+fmtTime(t.end):""}</span>
+    <div style="flex:1;min-width:0">
+      <div class="tt-label">${esc(t.label)}</div>
+      ${t.notes?`<div class="tt-note">${esc(t.notes)}</div>`:""}
+    </div>
+    ${withDelete?`<button class="icon-btn danger" data-action="delete-tt" title="Supprimer ce créneau">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+    </button>`:""}
+  </div>`;
+}
+function ttOn(dow){
+  return state.timetable.filter(t=>t.days.includes(dow)).sort((a,b)=>a.start.localeCompare(b.start));
 }
 
 /* ============ RENDU : ROW D'ACTIVITÉ ============ */
@@ -924,7 +1059,7 @@ function renderToday(){
       <div class="stat"><div class="ico" style="background:rgba(255,159,67,.15)">📖</div><div><div class="num">${state.lessons.length + state.activities.length}</div><div class="lbl">Cours & activités suivis</div></div></div>
     </div>`;
 
-  if(state.lessons.length===0 && state.activities.length===0){
+  if(state.lessons.length===0 && state.activities.length===0 && state.timetable.length===0){
     html += `
     <div class="empty" style="margin-top:22px">
       <span class="emoji">🚀</span>
@@ -936,6 +1071,11 @@ function renderToday(){
     return;
   }
 
+  const ttToday = ttOn(dowIndex(t));
+  if(ttToday.length){
+    html += `<div class="section-title">🗓️ Tes cours du jour <span class="count">${ttToday.length}</span></div>
+      <div class="tt-list">${ttToday.map(x=>ttRow(x,false)).join("")}</div>`;
+  }
   if(overdue.length){
     html += `<div class="section-title">⏰ En retard <span class="count">${overdue.length}</span></div>
       <div class="task-list">${overdue.map(x=>taskRow(x.lesson,x.review)).join("")}</div>`;
@@ -1007,9 +1147,11 @@ function renderCalendar(){
 
   const sel = (byDate[selectedDay]||[]).sort((a,b)=>(a.review.done?1:0)-(b.review.done?1:0));
   const selActs = activitiesOn(selectedDay);
+  const selTT = ttOn(dowIndex(selectedDay));
   let panel = `<div class="section-title">📍 ${fmtLong(selectedDay)}</div>`;
-  panel += (sel.length || selActs.length)
-    ? `<div class="task-list">${sel.map(x=>taskRow(x.lesson,x.review)).join("")}${selActs.map(a=>activityRow(a,selectedDay)).join("")}</div>`
+  panel += (sel.length || selActs.length || selTT.length)
+    ? `${selTT.length?`<div class="tt-list" style="margin-bottom:10px">${selTT.map(x=>ttRow(x,false)).join("")}</div>`:""}
+       <div class="task-list">${sel.map(x=>taskRow(x.lesson,x.review)).join("")}${selActs.map(a=>activityRow(a,selectedDay)).join("")}</div>`
     : `<div class="empty"><span class="emoji">🌤️</span><h3>Rien de prévu ce jour-là</h3><p>Une journée libre, ça se savoure.</p></div>`;
 
   $("#view-calendar").innerHTML = `
@@ -1029,7 +1171,7 @@ function renderCalendar(){
 
 /* ============ VUE : MES COURS ============ */
 function renderCourses(){
-  if(state.lessons.length===0 && state.activities.length===0){
+  if(state.lessons.length===0 && state.activities.length===0 && state.timetable.length===0){
     $("#view-courses").innerHTML = `
       <div class="empty"><span class="emoji">📭</span>
       <h3>Aucun cours ni activité pour l'instant</h3>
@@ -1058,6 +1200,7 @@ function renderCourses(){
     <div class="course-card" data-lid="${l.id}">
       <div class="course-top">
         <h3>${esc(l.title)}</h3>
+        <button class="icon-btn" data-action="open-cards" title="Flashcards (${(l.cards||[]).length})">🎴</button>
         <button class="icon-btn danger" data-action="delete-lesson" title="Supprimer ce cours">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
         </button>
@@ -1066,6 +1209,7 @@ function renderCourses(){
         <span class="chip" style="--c:${subj.color}">${esc(subj.name)}</span>
         <span>${method? method.emoji+" "+method.name : ""}</span>
         <span>· appris le ${fmtShort(l.start)}</span>
+        ${l.cards && l.cards.length?`<span>· 🎴 ${l.cards.length} carte${l.cards.length>1?"s":""}</span>`:""}
       </div>
       ${l.notes ? `<div class="task-note">${esc(l.notes)}</div>`:""}
       <div>
@@ -1099,9 +1243,17 @@ function renderCourses(){
     </div>`;
   }).join("");
 
+  const ttDays = [0,1,2,3,4,5,6].filter(d=>state.timetable.some(t=>t.days.includes(d)));
+  const ttCards = ttDays.map(d=>`
+    <div class="course-card">
+      <div class="course-top"><h3>${DAY_FULL[d]}</h3></div>
+      <div class="tt-list">${ttOn(d).map(x=>ttRow(x,true)).join("")}</div>
+    </div>`).join("");
+
   let html = "";
   if(cards) html += `<div class="section-title" style="margin-top:0">📚 Mes cours <span class="count">${state.lessons.length}</span></div><div class="courses-grid">${cards}</div>`;
   if(actCards) html += `<div class="section-title" ${cards?"":'style="margin-top:0"'}>🏃 Mes activités <span class="count">${state.activities.length}</span></div><div class="courses-grid">${actCards}</div>`;
+  if(ttCards) html += `<div class="section-title" ${(cards||actCards)?"":'style="margin-top:0"'}>🗓️ Mon emploi du temps <span class="count">${state.timetable.length}</span></div><div class="courses-grid">${ttCards}</div>`;
   $("#view-courses").innerHTML = html;
   $("#view-courses").querySelectorAll(".course-card").forEach((el,i)=>el.style.animationDelay = Math.min(i*50,300)+"ms");
 }
@@ -1368,6 +1520,8 @@ let pickedType = "course";
 let pickedEmoji = ACT_EMOJIS[0];
 let pickedActColor = PALETTE[3];
 let pickedDays = [];
+let pickedTTDays = [];
+let pickedTTColor = PALETTE[0];
 
 function buildMethodCards(){
   $("#methodList").innerHTML = METHODS.map(m=>`
@@ -1392,23 +1546,41 @@ function buildDayChips(){
   $("#dayChips").innerHTML = DAY_LABELS.map((l,i)=>
     `<button type="button" class="day-chip ${pickedDays.includes(i)?"sel":""}" data-action="pick-day" data-day="${i}" aria-label="${DAY_SHORT[i]}" title="${DAY_SHORT[i]}">${l}</button>`).join("");
 }
+function buildTTDayChips(){
+  $("#ttDayChips").innerHTML = DAY_LABELS.map((l,i)=>
+    `<button type="button" class="day-chip ${pickedTTDays.includes(i)?"sel":""}" data-action="pick-tt-day" data-day="${i}" aria-label="${DAY_SHORT[i]}" title="${DAY_SHORT[i]}">${l}</button>`).join("");
+}
+function buildTTSwatches(){
+  $("#ttSwatches").innerHTML = PALETTE.map(c=>
+    `<button type="button" class="swatch ${c===pickedTTColor?"sel":""}" style="--c:${c}" data-action="pick-tt-color" data-color="${c}" aria-label="Couleur"></button>`).join("");
+}
 function applyType(){
   $("#formError").classList.remove("show");
-  const isCourse = pickedType==="course";
-  $("#courseFields").style.display = isCourse ? "block":"none";
-  $("#activityFields").style.display = isCourse ? "none":"block";
   document.querySelectorAll(".type-btn").forEach(b=>b.classList.toggle("sel", b.dataset.type===pickedType));
-  $("#modalTitle").textContent = isCourse ? "Nouveau cours ✨" : "Nouvelle activité 🏃";
-  $("#modalSub").textContent = isCourse
-    ? "Dis-moi ce que tu as appris : je planifie toutes tes révisions tout seul."
-    : "Sport, musique, détente… choisis tes jours, je la place chaque semaine dans ton planning.";
-  $("#fTitleLabel").textContent = isCourse ? "Titre du cours" : "Nom de l'activité";
-  $("#fTitle").placeholder = isCourse ? "Ex : Chapitre 4 — Les intégrales" : "Ex : Footing, Muscu, Guitare…";
-  $("#fNotes").placeholder = isCourse
-    ? "Ex : Relire la fiche, refaire les exos 3 et 4, réciter les définitions…"
-    : "Ex : 30 min de course + 10 min d'étirements…";
-  $("#previewTitle").textContent = isCourse ? "📅 Ton planning généré automatiquement" : "📅 Tes prochaines séances";
-  $("#submitBtn").textContent = isCourse ? "Planifier mes révisions" : "Ajouter à mon planning";
+  $("#courseFields").style.display = pickedType==="course" ? "block":"none";
+  $("#activityFields").style.display = pickedType==="activity" ? "block":"none";
+  $("#timetableFields").style.display = pickedType==="timetable" ? "block":"none";
+  const cfg = {
+    course:    {title:"Nouveau cours ✨",    sub:"Dis-moi ce que tu as appris : je planifie toutes tes révisions tout seul.",
+                lbl:"Titre du cours",        ph:"Ex : Chapitre 4 — Les intégrales",
+                nph:"Ex : Relire la fiche, refaire les exos 3 et 4, réciter les définitions…",
+                pt:"📅 Ton planning généré automatiquement", btn:"Planifier mes révisions"},
+    activity:  {title:"Nouvelle activité 🏃", sub:"Sport, musique, détente… choisis tes jours, je la place chaque semaine dans ton planning.",
+                lbl:"Nom de l'activité",     ph:"Ex : Footing, Muscu, Guitare…",
+                nph:"Ex : 30 min de course + 10 min d'étirements…",
+                pt:"📅 Tes prochaines séances", btn:"Ajouter à mon planning"},
+    timetable: {title:"Nouveau créneau 🗓️",  sub:"Ton emploi du temps de la semaine — visible chaque jour dans ton planning, semaine après semaine.",
+                lbl:"Intitulé du créneau",   ph:"Ex : Maths — amphi 3",
+                nph:"Ex : Salle B204, prof : M. Martin…",
+                pt:"📅 Chaque semaine", btn:"Ajouter à mon emploi du temps"}
+  }[pickedType];
+  $("#modalTitle").textContent = cfg.title;
+  $("#modalSub").textContent = cfg.sub;
+  $("#fTitleLabel").textContent = cfg.lbl;
+  $("#fTitle").placeholder = cfg.ph;
+  $("#fNotes").placeholder = cfg.nph;
+  $("#previewTitle").textContent = cfg.pt;
+  $("#submitBtn").textContent = cfg.btn;
   updatePreview();
 }
 function buildSubjectSelect(){
@@ -1432,6 +1604,18 @@ function currentIntervals(){
 }
 function updatePreview(){
   const box = $("#previewChips");
+  if(pickedType==="timetable"){
+    if(!pickedTTDays.length){
+      box.innerHTML = `<span style="font-size:13px;color:var(--muted);font-weight:600">Choisis au moins un jour de la semaine 📆</span>`;
+      return;
+    }
+    const s = $("#fTTStart").value || "08:00";
+    const e = $("#fTTEnd").value || "";
+    box.innerHTML = [...pickedTTDays].sort((a,b)=>a-b).map((d,i)=>
+      `<span class="p-chip" style="animation-delay:${i*50}ms">${DAY_SHORT[d]} ${fmtTime(s)}${e?" – "+fmtTime(e):""}</span>`).join("")
+      + `<span class="p-chip" style="animation-delay:${pickedTTDays.length*50}ms">chaque semaine ♾️</span>`;
+    return;
+  }
   if(pickedType==="activity"){
     if(!pickedDays.length){
       box.innerHTML = `<span style="font-size:13px;color:var(--muted);font-weight:600">Choisis au moins un jour de la semaine 📆</span>`;
@@ -1468,15 +1652,21 @@ function openModal(){
   pickedMethod = "j";
   pickedType = "course";
   pickedDays = [];
+  pickedTTDays = [];
   pickedEmoji = ACT_EMOJIS[0];
   pickedColor = PALETTE[(state.subjects.length)%PALETTE.length];
   pickedActColor = PALETTE[(state.activities.length+3)%PALETTE.length];
+  pickedTTColor = PALETTE[(state.timetable.length)%PALETTE.length];
+  $("#fTTStart").value = "08:00";
+  $("#fTTEnd").value = "09:00";
   buildSubjectSelect();
   buildMethodCards();
   buildSwatches();
   buildActSwatches();
   buildEmojiChips();
   buildDayChips();
+  buildTTDayChips();
+  buildTTSwatches();
   $("#customRow").style.display = "none";
   $("#examRow").style.display = "none";
   applyType();
@@ -1494,6 +1684,24 @@ function submitEntry(){
   const title = $("#fTitle").value.trim();
   if(!title) return showError(pickedType==="course" ? "Donne un titre à ton cours 🙏" : "Donne un nom à ton activité 🙏");
   const notes = $("#fNotes").value.trim();
+
+  if(pickedType==="timetable"){
+    if(!pickedTTDays.length) return showError("Choisis au moins un jour de la semaine 📆");
+    const ttStart = $("#fTTStart").value || "08:00";
+    const ttEnd = $("#fTTEnd").value || "";
+    if(ttEnd && ttEnd <= ttStart) return showError("L'heure de fin doit être après l'heure de début ⏰");
+    state.timetable.push({
+      id:uid(), label:title, notes,
+      days:[...pickedTTDays].sort((a,b)=>a-b),
+      start:ttStart, end:ttEnd, color:pickedTTColor,
+      createdAt:Date.now()
+    });
+    save();
+    closeModal();
+    render();
+    toast(`🗓️ « ${title.length>30?title.slice(0,30)+"…":title} » ajouté à ton emploi du temps`);
+    return;
+  }
 
   if(pickedType==="activity"){
     if(!pickedDays.length) return showError("Choisis au moins un jour de la semaine 📆");
@@ -1538,6 +1746,7 @@ function submitEntry(){
     methodId:pickedMethod,
     examDate: pickedMethod==="exam" ? $("#fExam").value : null,
     reviews: buildReviews(start, ints),
+    cards: [],
     createdAt: Date.now()
   };
   state.lessons.push(lesson);
@@ -1770,6 +1979,361 @@ function openSyncModal(){
 }
 function closeSyncModal(){ $("#syncBackdrop").classList.remove("open"); }
 
+/* ============ FLASHCARDS : ÉDITEUR ============ */
+let cardsLid = null;
+
+function openCards(lid){
+  const l = state.lessons.find(x=>x.id===lid); if(!l) return;
+  cardsLid = lid;
+  $("#cardsTitle").textContent = `Flashcards 🎴 — ${l.title.length>28?l.title.slice(0,28)+"…":l.title}`;
+  $("#cardQ").value = ""; $("#cardA").value = ""; $("#cardBulk").value = "";
+  $("#cardsError").classList.remove("show");
+  renderCardsList();
+  $("#cardsBackdrop").classList.add("open");
+}
+function renderCardsList(){
+  const l = state.lessons.find(x=>x.id===cardsLid); if(!l) return;
+  $("#cardsList").innerHTML = l.cards.length
+    ? l.cards.map(c=>`
+      <div class="card-row" data-cid="${c.id}">
+        <div style="flex:1;min-width:0">
+          <div class="cq">${esc(c.q)}</div>
+          <div class="ca">${esc(c.a)}</div>
+        </div>
+        <button class="icon-btn danger" data-action="del-card" title="Supprimer">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+        </button>
+      </div>`).join("")
+    : `<div class="hint" style="padding:8px 2px">Aucune carte pour l'instant — ajoute-les à la main, en masse, ou importe un paquet Anki.</div>`;
+  $("#cardsTitle").textContent = `Flashcards 🎴 (${l.cards.length})`;
+}
+function showCardsError(msg){
+  const el = $("#cardsError");
+  el.textContent = msg;
+  el.classList.remove("show"); void el.offsetWidth;
+  el.classList.add("show");
+}
+function addCard(q, a){
+  const l = state.lessons.find(x=>x.id===cardsLid); if(!l) return false;
+  q = q.trim(); a = a.trim();
+  if(!q || !a) return false;
+  if(l.cards.some(c=>c.q===q)) return false;
+  l.cards.push({id:uid(), q:q.slice(0,500), a:a.slice(0,1000), seen:0, ok:0, fail:0});
+  return true;
+}
+
+/* ============ IMPORT ANKI (.apkg) ============ */
+function unzipEntries(buf){
+  const u8 = new Uint8Array(buf), dv = new DataView(buf);
+  let eocd = -1;
+  for(let i=u8.length-22; i>=Math.max(0,u8.length-22-65557); i--){
+    if(dv.getUint32(i,true)===0x06054b50){ eocd=i; break; }
+  }
+  if(eocd<0) throw new Error("zip");
+  const count = dv.getUint16(eocd+10,true);
+  let off = dv.getUint32(eocd+16,true);
+  const out = {};
+  const td = new TextDecoder();
+  for(let n=0;n<count;n++){
+    if(dv.getUint32(off,true)!==0x02014b50) break;
+    const method = dv.getUint16(off+10,true);
+    const csize = dv.getUint32(off+20,true);
+    const nameLen = dv.getUint16(off+28,true);
+    const extraLen = dv.getUint16(off+30,true);
+    const cmtLen = dv.getUint16(off+32,true);
+    const lho = dv.getUint32(off+42,true);
+    const name = td.decode(u8.subarray(off+46, off+46+nameLen));
+    const lnl = dv.getUint16(lho+26,true), lel = dv.getUint16(lho+28,true);
+    const dataStart = lho+30+lnl+lel;
+    out[name] = {method, cdata: u8.subarray(dataStart, dataStart+csize)};
+    off += 46+nameLen+extraLen+cmtLen;
+  }
+  return out;
+}
+async function zipExtract(entry){
+  if(entry.method===0) return entry.cdata;
+  if(entry.method===8){
+    const ds = new DecompressionStream("deflate-raw");
+    const stream = new Blob([entry.cdata]).stream().pipeThrough(ds);
+    return new Uint8Array(await new Response(stream).arrayBuffer());
+  }
+  throw new Error("compression non supportée");
+}
+let _sqlPromise = null;
+function loadSqlJs(){
+  if(_sqlPromise) return _sqlPromise;
+  _sqlPromise = new Promise((res,rej)=>{
+    const s = document.createElement("script");
+    s.src = "https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.min.js";
+    s.onload = res; s.onerror = ()=>rej(new Error("cdn"));
+    document.head.appendChild(s);
+  }).then(()=>initSqlJs({locateFile:f=>"https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/"+f}));
+  return _sqlPromise;
+}
+function cleanAnkiField(s){
+  return String(s)
+    .replace(/\[sound:[^\]]*\]/g,"")
+    .replace(/<br\s*\/?>/gi,"\n")
+    .replace(/<\/(div|p|li)>/gi,"\n")
+    .replace(/<[^>]+>/g,"")
+    .replace(/&nbsp;/g," ").replace(/&amp;/g,"&").replace(/&lt;/g,"<")
+    .replace(/&gt;/g,">").replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&sup2;/g,"²")
+    .replace(/\n{3,}/g,"\n\n").trim();
+}
+async function importApkg(file){
+  const l = state.lessons.find(x=>x.id===cardsLid); if(!l) return;
+  toast("⏳ Lecture du paquet Anki…");
+  let entries;
+  try{ entries = unzipEntries(await file.arrayBuffer()); }
+  catch(e){ return showCardsError("Ce fichier n'est pas un paquet Anki valide"); }
+  const dbe = entries["collection.anki21"] || entries["collection.anki2"];
+  if(!dbe){
+    return showCardsError(entries["collection.anki21b"]
+      ? "Paquet trop récent : dans Anki, exporte en cochant « Support older Anki versions »"
+      : "Ce fichier ne contient pas de collection Anki");
+  }
+  let rows = [];
+  try{
+    const bytes = await zipExtract(dbe);
+    const SQL = await loadSqlJs();
+    const db = new SQL.Database(bytes);
+    try{
+      const res = db.exec("SELECT flds FROM notes");
+      rows = res.length ? res[0].values : [];
+    }finally{ db.close(); }
+  }catch(e){
+    return showCardsError("Impossible de lire ce paquet (connexion requise au premier import pour le décodeur)");
+  }
+  let added = 0;
+  for(const r of rows){
+    const f = String(r[0]).split("\u001F").map(cleanAnkiField);
+    let q = f[0]||"", a = f.slice(1).filter(Boolean).join("\n");
+    if(/\{\{c\d+::/.test(q)){
+      a = q.replace(/\{\{c\d+::(.*?)(?:::[^}]*)?\}\}/g, "$1") + (a ? "\n"+a : "");
+      q = q.replace(/\{\{c\d+::(?:.*?)(?:::([^}]*))?\}\}/g, (m,h)=>"［…"+(h?" "+h:"")+"］");
+    }
+    if(addCard(q, a)) added++;
+  }
+  save();
+  renderCardsList();
+  if(currentView==="courses") renderCourses();
+  toast(added ? `🎴 ${added} carte${added>1?"s":""} importée${added>1?"s":""} depuis Anki !` : "Aucune nouvelle carte trouvée dans ce paquet");
+}
+
+/* ============ QUIZ ============ */
+let quiz = null;
+
+function startQuiz(lid, rid){
+  const l = state.lessons.find(x=>x.id===lid);
+  if(!l || !l.cards.length) return;
+  const deck = [...l.cards]
+    .sort((a,b)=>(b.fail/((b.seen||0)+1)) - (a.fail/((a.seen||0)+1)) || Math.random()-0.5)
+    .map(c=>c.id);
+  quiz = {lid, rid, queue:deck, total:deck.length, answered:0, okFirst:0, firstTry:{}, flipped:false, finished:false};
+  renderQuiz();
+  $("#quizBackdrop").classList.add("open");
+}
+function quizLesson(){ return state.lessons.find(x=>x.id===quiz.lid); }
+function renderQuiz(){
+  const l = quizLesson();
+  if(!quiz || !l) return;
+  if(!quiz.queue.length){
+    const pct = Math.round(quiz.okFirst/quiz.total*100);
+    const verdict = pct>=80 ? "Excellent, c'est ancré ! 🏆" : pct>=60 ? "Pas mal du tout 👊" : "C'était costaud — on remet ça vite ?";
+    quiz.finished = true;
+    $("#quizBody").innerHTML = `
+      <div class="quiz-end">
+        <div style="font-size:44px">${pct>=80?"🎉":pct>=60?"💪":"🌱"}</div>
+        <div class="quiz-score">${quiz.okFirst}/${quiz.total}</div>
+        <p class="modal-sub" style="margin-bottom:20px">${verdict} La révision du jour est cochée automatiquement.</p>
+        <div class="modal-actions" style="justify-content:center">
+          ${pct<60 ? `<button class="btn-primary" data-action="quiz-extra">➕ Réviser à nouveau demain</button>`:""}
+          <button class="${pct<60?"btn-secondary":"btn-primary"}" data-action="quiz-close">Terminer</button>
+        </div>
+      </div>`;
+    // coche la révision liée
+    if(quiz.rid){
+      const review = l.reviews.find(r=>r.id===quiz.rid);
+      if(review && !review.done){ review.done = true; review.doneOn = todayISO(); }
+    }
+    save();
+    return;
+  }
+  const card = l.cards.find(c=>c.id===quiz.queue[0]);
+  if(!card){ quiz.queue.shift(); return renderQuiz(); }
+  const done = quiz.total - quiz.queue.filter(id=>!(id in quiz.firstTry)).length;
+  $("#quizBody").innerHTML = `
+    <h2 style="margin-bottom:4px">Quiz 🎴</h2>
+    <p class="modal-sub">${esc(l.title)}</p>
+    <div class="quiz-counter">${quiz.queue.length} carte${quiz.queue.length>1?"s":""} restante${quiz.queue.length>1?"s":""}</div>
+    <div class="quiz-progress"><div class="bar" style="width:${Math.round(done/quiz.total*100)}%"></div></div>
+    <div class="quiz-scene">
+      <div class="quiz-card ${quiz.flipped?"flipped":""}" data-action="quiz-flip">
+        <div class="quiz-face"><span class="ql">Question</span><span class="qt">${esc(card.q)}</span></div>
+        <div class="quiz-face back"><span class="ql">Réponse</span><span class="qt">${esc(card.a)}</span></div>
+      </div>
+    </div>
+    ${quiz.flipped ? `
+    <div class="quiz-grades">
+      <button class="grade-btn fail" data-action="quiz-grade" data-g="fail">❌ Raté</button>
+      <button class="grade-btn hard" data-action="quiz-grade" data-g="hard">😬 Difficile</button>
+      <button class="grade-btn easy" data-action="quiz-grade" data-g="easy">✅ Facile</button>
+    </div>
+    <div class="quiz-flip-hint">Sur Mac : touches 1 · 2 · 3</div>`
+    : `<div class="quiz-flip-hint">Réponds dans ta tête, puis touche la carte pour vérifier (ou Espace)</div>`}
+    <div class="modal-actions" style="margin-top:14px">
+      <button class="btn-secondary" data-action="quiz-close">Quitter le quiz</button>
+    </div>`;
+}
+function quizFlip(){
+  if(!quiz || quiz.finished || quiz.flipped) return;
+  quiz.flipped = true;
+  const el = document.querySelector(".quiz-card");
+  if(el) el.classList.add("flipped");
+  setTimeout(renderQuiz, 220);
+}
+function quizGrade(g){
+  if(!quiz || !quiz.flipped) return;
+  const l = quizLesson(); if(!l) return;
+  const cid = quiz.queue.shift();
+  const card = l.cards.find(c=>c.id===cid);
+  quiz.flipped = false;
+  if(card){
+    card.seen = (card.seen||0)+1;
+    const first = !(cid in quiz.firstTry);
+    if(first) quiz.firstTry[cid] = g;
+    if(g==="fail"){
+      card.fail = (card.fail||0)+1;
+      quiz.queue.push(cid); // la carte ratée revient en fin de session
+    }else{
+      card.ok = (card.ok||0)+1;
+      if(first) quiz.okFirst++;
+    }
+  }
+  quiz.answered++;
+  save();
+  renderQuiz();
+}
+function quizClose(){
+  $("#quizBackdrop").classList.remove("open");
+  quiz = null;
+  render();
+}
+function quizExtra(){
+  const l = quizLesson(); if(!l) return quizClose();
+  const due = addDays(todayISO(),1);
+  if(!l.reviews.some(r=>!r.done && r.due===due)){
+    l.reviews.push({id:uid(), n:0, offset:diffDays(l.start,due), due, done:false, doneOn:null});
+    l.reviews.sort((a,b)=>a.due.localeCompare(b.due));
+    l.reviews.forEach((r,i)=>r.n=i);
+    save();
+  }
+  toast("➕ Révision supplémentaire ajoutée demain — courage !");
+  quizClose();
+}
+
+/* ============ NOTIFICATIONS PUSH ============ */
+function b64ToU8(s){
+  const pad = "=".repeat((4 - s.length % 4) % 4);
+  const b = atob((s+pad).replace(/-/g,"+").replace(/_/g,"/"));
+  return Uint8Array.from(b, c=>c.charCodeAt(0));
+}
+function notifSupport(){
+  if(!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) return false;
+  return location.protocol.indexOf("http")===0;
+}
+async function getPushSub(){
+  try{
+    const reg = await navigator.serviceWorker.ready;
+    return await reg.pushManager.getSubscription();
+  }catch(e){ return null; }
+}
+async function readPushSubs(){
+  const g = await gh("/gists/"+sync.gistId);
+  const f = g.files && g.files["revisia-push.json"];
+  if(!f) return [];
+  let c = f.content;
+  if(f.truncated) c = await fetch(f.raw_url).then(r=>r.text());
+  try{ const j = JSON.parse(c); return Array.isArray(j.subscriptions)? j.subscriptions:[]; }catch(e){ return []; }
+}
+async function writePushSubs(subs){
+  const files = {}; files["revisia-push.json"] = {content: JSON.stringify({subscriptions:subs}, null, 2)};
+  await gh("/gists/"+sync.gistId, {method:"PATCH", body:{files}});
+}
+function showNotifError(msg){
+  const el = $("#notifError");
+  el.textContent = msg;
+  el.classList.remove("show"); void el.offsetWidth;
+  el.classList.add("show");
+}
+async function refreshNotifModal(){
+  const okSync = !!sync;
+  const okSupport = notifSupport();
+  const sub = okSupport ? await getPushSub() : null;
+  const iosTab = /iPhone|iPad/.test(navigator.userAgent) && !navigator.standalone;
+  const row = (ok, txt)=>`<div class="sync-row"><span class="lbl">${txt}</span><span>${ok?"✅":"❌"}</span></div>`;
+  $("#notifReqs").innerHTML =
+    row(okSync, "Synchronisation activée (nécessaire)") +
+    row(okSupport, "Appareil compatible") +
+    row(!!sub, "Rappels activés sur cet appareil");
+  $("#notifHint").textContent =
+    !okSupport && iosTab ? "Sur iPhone/iPad : installe d'abord l'appli (Safari → Partager → Sur l'écran d'accueil), puis ouvre-la et reviens ici."
+    : !okSupport ? "Cet environnement ne gère pas les notifications web — utilise la version installée sur iPhone/iPad ou un navigateur (Chrome, Safari…)."
+    : !okSync ? "Active d'abord la synchronisation (⚙️ → Synchronisation) : c'est elle qui permet au rappel de connaître tes révisions."
+    : sub ? "Tout est en place ! Le rappel part chaque matin vers 8 h s'il y a quelque chose à faire."
+    : "Dernière étape : autorise les notifications sur cet appareil.";
+  const btn = $("#notifToggleBtn");
+  btn.textContent = sub ? "Désactiver sur cet appareil" : "Activer sur cet appareil";
+  btn.dataset.mode = sub ? "off" : "on";
+  btn.style.display = (okSupport && okSync) || sub ? "inline-flex" : "none";
+}
+async function enableNotifs(){
+  if(!sync) return showNotifError("Active d'abord la synchronisation ☁️");
+  if(!notifSupport()) return showNotifError("Notifications non disponibles dans cet environnement");
+  try{
+    const perm = await Notification.requestPermission();
+    if(perm!=="granted") return showNotifError("Tu as refusé la permission — tu peux la réactiver dans les réglages du navigateur");
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.subscribe({userVisibleOnly:true, applicationServerKey: b64ToU8(VAPID_PUBLIC)});
+    const subs = await readPushSubs();
+    const j = sub.toJSON();
+    if(!subs.some(s=>s.endpoint===j.endpoint)){
+      subs.push(Object.assign({}, j, {device:(navigator.platform||"appareil")+"", added:Date.now()}));
+      await writePushSubs(subs);
+    }
+    toast("🔔 Rappels activés sur cet appareil !");
+    refreshNotifModal();
+  }catch(e){
+    showNotifError("Échec de l'activation — vérifie ta connexion et réessaie");
+  }
+}
+async function disableNotifs(){
+  try{
+    const sub = await getPushSub();
+    if(sub){
+      const j = sub.toJSON();
+      await sub.unsubscribe();
+      if(sync){
+        const subs = (await readPushSubs()).filter(s=>s.endpoint!==j.endpoint);
+        await writePushSubs(subs);
+      }
+    }
+    toast("🔕 Rappels désactivés sur cet appareil");
+    refreshNotifModal();
+  }catch(e){ showNotifError("Impossible de désactiver — réessaie"); }
+}
+function openNotifModal(){
+  $("#notifError").classList.remove("show");
+  refreshNotifModal();
+  $("#notifBackdrop").classList.add("open");
+}
+function closeNotifModal(){ $("#notifBackdrop").classList.remove("open"); }
+function closeCardsModal(){
+  $("#cardsBackdrop").classList.remove("open");
+  cardsLid = null;
+  if(currentView==="courses") renderCourses();
+}
+
 /* ============ ÉVÉNEMENTS ============ */
 document.addEventListener("click", e=>{
   const actEl = e.target.closest("[data-action]");
@@ -1780,6 +2344,8 @@ document.addEventListener("click", e=>{
   if(!actEl) {
     if(e.target===$("#modalBackdrop")) closeModal();
     if(e.target===$("#syncBackdrop")) closeSyncModal();
+    if(e.target===$("#notifBackdrop")) closeNotifModal();
+    if(e.target===$("#cardsBackdrop")) closeCardsModal();
     return;
   }
   const action = actEl.dataset.action;
@@ -1851,6 +2417,70 @@ document.addEventListener("click", e=>{
     case "open-sync": openSyncModal(); $("#settingsPop").classList.remove("open"); break;
     case "close-sync": closeSyncModal(); break;
     case "sync-now": syncNow(false); break;
+    case "open-notif": openNotifModal(); $("#settingsPop").classList.remove("open"); break;
+    case "close-notif": closeNotifModal(); break;
+    case "open-cards": {
+      const card = actEl.closest(".course-card");
+      openCards(card.dataset.lid);
+      break;
+    }
+    case "close-cards": closeCardsModal(); break;
+    case "add-card": {
+      if(addCard($("#cardQ").value, $("#cardA").value)){
+        $("#cardQ").value=""; $("#cardA").value="";
+        save(); renderCardsList(); $("#cardQ").focus();
+      }else showCardsError("Il faut une question ET une réponse (et pas de doublon) 🙏");
+      break;
+    }
+    case "del-card": {
+      const row = actEl.closest(".card-row");
+      armConfirm(actEl, ()=>{
+        const l = state.lessons.find(x=>x.id===cardsLid);
+        if(l){ l.cards = l.cards.filter(c=>c.id!==row.dataset.cid); save(); renderCardsList(); }
+      });
+      break;
+    }
+    case "bulk-add": {
+      const lines = $("#cardBulk").value.split("\n");
+      let n = 0;
+      for(const line of lines){
+        const i = line.indexOf("::");
+        if(i>0 && addCard(line.slice(0,i), line.slice(i+2))) n++;
+      }
+      if(n){ $("#cardBulk").value=""; save(); renderCardsList(); toast(`🎴 ${n} carte${n>1?"s":""} ajoutée${n>1?"s":""}`); }
+      else showCardsError("Aucune ligne valide — format attendu : question :: réponse");
+      break;
+    }
+    case "apkg-pick": $("#apkgFile").click(); break;
+    case "start-quiz": {
+      const row = actEl.closest(".task");
+      startQuiz(row.dataset.lid, row.dataset.rid);
+      break;
+    }
+    case "quiz-flip": quizFlip(); break;
+    case "quiz-grade": quizGrade(actEl.dataset.g); break;
+    case "quiz-close": quizClose(); break;
+    case "quiz-extra": quizExtra(); break;
+    case "pick-tt-day": {
+      const d = parseInt(actEl.dataset.day,10);
+      pickedTTDays = pickedTTDays.includes(d) ? pickedTTDays.filter(x=>x!==d) : [...pickedTTDays, d];
+      actEl.classList.toggle("sel", pickedTTDays.includes(d));
+      updatePreview();
+      break;
+    }
+    case "pick-tt-color":
+      pickedTTColor = actEl.dataset.color;
+      document.querySelectorAll("#ttSwatches .swatch").forEach(b=>b.classList.toggle("sel", b.dataset.color===pickedTTColor));
+      break;
+    case "delete-tt": {
+      const row = actEl.closest(".tt-row");
+      armConfirm(actEl, ()=>{
+        state.timetable = state.timetable.filter(t=>t.id!==row.dataset.tid);
+        save(); render();
+        toast("🗑️ Créneau supprimé");
+      });
+      break;
+    }
     case "focus-start": focusStartPause(); break;
     case "focus-reset": focusReset(); break;
     case "focus-skip": focusSkip(); break;
@@ -1905,13 +2535,33 @@ $("#fDate").addEventListener("change", updatePreview);
 $("#fExam").addEventListener("change", updatePreview);
 $("#fActStart").addEventListener("change", updatePreview);
 $("#fIntervals").addEventListener("input", updatePreview);
+$("#fTTStart").addEventListener("change", updatePreview);
+$("#fTTEnd").addEventListener("change", updatePreview);
+$("#apkgFile").addEventListener("change", e=>{
+  if(e.target.files[0]) importApkg(e.target.files[0]);
+  e.target.value = "";
+});
+$("#notifToggleBtn").addEventListener("click", ()=>{
+  if($("#notifToggleBtn").dataset.mode==="off") disableNotifs();
+  else enableNotifs();
+});
 $("#importFile").addEventListener("change", e=>{
   if(e.target.files[0]) importData(e.target.files[0]);
   e.target.value = "";
 });
 document.addEventListener("keydown", e=>{
-  if(e.key==="Escape"){ closeModal(); closeSyncModal(); $("#settingsPop").classList.remove("open"); }
+  if(e.key==="Escape"){
+    closeModal(); closeSyncModal(); closeNotifModal(); closeCardsModal();
+    if(quiz) quizClose();
+    $("#settingsPop").classList.remove("open");
+  }
   if(e.key==="Enter" && $("#modalBackdrop").classList.contains("open") && e.target.tagName==="INPUT") submitEntry();
+  if(quiz && $("#quizBackdrop").classList.contains("open") && e.target.tagName!=="INPUT" && e.target.tagName!=="TEXTAREA"){
+    if(e.key===" " || e.key==="Enter"){ e.preventDefault(); quizFlip(); }
+    if(quiz.flipped && e.key==="1") quizGrade("fail");
+    if(quiz.flipped && e.key==="2") quizGrade("hard");
+    if(quiz.flipped && e.key==="3") quizGrade("easy");
+  }
 });
 window.addEventListener("resize", positionPill);
 $("#syncBtn").addEventListener("click", ()=>syncNow(false));

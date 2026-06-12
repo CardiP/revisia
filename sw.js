@@ -1,5 +1,5 @@
-/* Révisia — service worker : l'appli marche hors-ligne, et se met à jour seule quand il y a du réseau */
-const CACHE = "revisia-v1";
+/* Révisia — service worker : l'appli marche hors-ligne, se met à jour seule, et reçoit les rappels push */
+const CACHE = "revisia-v2";
 const CORE = ["./", "./index.html", "./manifest.webmanifest", "./icon-180.png", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", e => {
@@ -11,6 +11,28 @@ self.addEventListener("activate", e => {
     caches.keys()
       .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
+  );
+});
+
+/* Rappels push (envoyés chaque matin par l'action GitHub) */
+self.addEventListener("push", e => {
+  let data = { title: "📚 Révisia", body: "Tes révisions t'attendent !" };
+  try { data = e.data.json(); } catch (_) {}
+  e.waitUntil(self.registration.showNotification(data.title, {
+    body: data.body,
+    icon: "./icon-192.png",
+    badge: "./icon-192.png",
+    lang: "fr"
+  }));
+});
+
+self.addEventListener("notificationclick", e => {
+  e.notification.close();
+  e.waitUntil(
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then(ws => {
+      for (const w of ws) { if ("focus" in w) return w.focus(); }
+      return clients.openWindow("./");
+    })
   );
 });
 
